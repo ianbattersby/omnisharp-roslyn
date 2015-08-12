@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if DNX451
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -170,3 +171,4 @@ namespace OmniSharp.Stdio.Tests
         }
     }
 }
+#endif

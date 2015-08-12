@@ -109,8 +109,8 @@ namespace OmniSharp.Tests
         public static OmnisharpWorkspace CreateCsxWorkspace(string source, string fileName = "dummy.csx")
         {
             var versionStamp = VersionStamp.Create();
-            var mscorlib = MetadataReference.CreateFromAssembly(AssemblyFromType(typeof(object)));
-            var systemCore = MetadataReference.CreateFromAssembly(AssemblyFromType(typeof(Enumerable)));
+            var mscorlib = MetadataReference.CreateFromFile(AssemblyFromType(typeof(object)).Location);
+            var systemCore = MetadataReference.CreateFromFile(AssemblyFromType(typeof(Enumerable)).Location);
             var references = new[] { mscorlib, systemCore };
             var workspace = new OmnisharpWorkspace();
 
@@ -145,8 +145,8 @@ namespace OmniSharp.Tests
         public static OmnisharpWorkspace AddProjectToWorkspace(OmnisharpWorkspace workspace, string filePath, string[] frameworks, Dictionary<string, string> sourceFiles)
         {
             var versionStamp = VersionStamp.Create();
-            var mscorlib = MetadataReference.CreateFromAssembly(AssemblyFromType(typeof(object)));
-            var systemCore = MetadataReference.CreateFromAssembly(AssemblyFromType(typeof(Enumerable)));
+            var mscorlib = MetadataReference.CreateFromFile(AssemblyFromType(typeof(object)).Location);
+            var systemCore = MetadataReference.CreateFromFile(AssemblyFromType(typeof(Enumerable)).Location);
             var references = new[] { mscorlib, systemCore };
 
             foreach (var framework in frameworks)
@@ -196,7 +196,7 @@ namespace OmniSharp.Tests
         public static ActionExecutingContext CreateActionExecutingContext(Request req, object controller = null)
         {
             var actionContext = new ActionContext(null, null, null);
-            var actionExecutingContext = new ActionExecutingContext(actionContext, new List<IFilter>(), new Dictionary<string, object> { { "request", req } }, controller);
+            var actionExecutingContext = new ActionExecutingContext(actionContext, new List<IFilterMetadata>(), new Dictionary<string, object> { { "request", req } }, controller);
             return actionExecutingContext;
         }
     }

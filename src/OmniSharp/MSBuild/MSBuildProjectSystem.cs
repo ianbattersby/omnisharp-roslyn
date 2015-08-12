@@ -296,7 +296,7 @@ namespace OmniSharp.MSBuild
                         continue;
                     }
 #if DNX451
-                    var analyzerReference = new AnalyzerFileReference(analyzerPath);
+                    var analyzerReference = new AnalyzerFileReference(analyzerPath, new ProjectAssemblyLoader());
                     project.AddAnalyzerReference(analyzerReference);
 #endif
                 }

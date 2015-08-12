@@ -1,6 +1,9 @@
 ﻿using System.Linq;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using System.ComponentModel;
+using System;
+using System.Reflection;
 
 namespace OmniSharp.Settings
 {
@@ -16,7 +19,7 @@ namespace OmniSharp.Settings
                     {
                         if (parameter.BindingInfo?.BindingSource != null ||
                             parameter.Attributes.OfType<IBindingSourceMetadata>().Any() ||
-                            ValueProviderResult.CanConvertFromString(parameter.ParameterInfo.ParameterType))
+                            CanConvertFromString(parameter.ParameterInfo.ParameterType))
                         {
                             // behavior configured or simple type so do nothing
                         }
@@ -29,6 +32,20 @@ namespace OmniSharp.Settings
                     }
                 }
             }
+        }
+
+        private bool CanConvertFromString(Type type)
+        {
+            Type underlyingType = Nullable.GetUnderlyingType(type);
+
+            return ((underlyingType != null && (
+                underlyingType.GetTypeInfo().IsPrimitive ||
+                   underlyingType.Equals(typeof(string)) ||
+                   underlyingType.Equals(typeof(DateTime)) ||
+                   underlyingType.Equals(typeof(Decimal)) ||
+                   underlyingType.Equals(typeof(Guid)) ||
+                   underlyingType.Equals(typeof(DateTimeOffset)) ||
+                   underlyingType.Equals(typeof(TimeSpan)))) || TypeDescriptor.GetConverter(type).CanConvertFrom(typeof(string)));
         }
     }
 }

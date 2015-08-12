@@ -3,12 +3,11 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.FeatureModel;
-using Microsoft.AspNet.Http;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Stdio.Features;
 using OmniSharp.Stdio.Protocol;
 using OmniSharp.Stdio.Services;
+using Microsoft.AspNet.Http.Features;
 
 namespace OmniSharp.Stdio
 {

@@ -3,14 +3,18 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Hosting;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
-using Microsoft.Framework.Runtime;
 using OmniSharp.Services;
 using OmniSharp.Stdio.Services;
+using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Hosting.Startup;
+using Microsoft.Framework.Configuration;
+using Microsoft.Dnx.Runtime;
+#if DNXCORE50
+using System.Threading.Tasks;
+#endif
 
 namespace OmniSharp
 {
@@ -70,28 +74,32 @@ namespace OmniSharp
 
             Environment = new OmnisharpEnvironment(applicationRoot, serverPort, hostPID, logLevel, transportType, otherArgs.ToArray());
 
-            var config = new Configuration()
-             .AddCommandLine(new[] { "--server.urls", "http://localhost:" + serverPort });
-
-            var engine = new HostingEngine(_serviceProvider);
-
-            var context = new HostingContext()
-            {
-                ServerFactoryLocation = "Kestrel",
-                Configuration = config,
-            };
-
             var writer = new SharedConsoleWriter();
-            context.Services.AddInstance<IOmnisharpEnvironment>(Environment);
-            context.Services.AddInstance<ISharedTextWriter>(writer);
+
+            var hostingServices = new ServiceCollection();
+            hostingServices.AddInstance<IOmnisharpEnvironment>(Environment);
+            hostingServices.AddInstance<ISharedTextWriter>(writer);
+
+            var hostingContainer = hostingServices.BuildServiceProvider();
+
+            var startupLoader = hostingContainer.GetRequiredService<IStartupLoader>();
+
+            var config = new ConfigurationBuilder()
+                .AddCommandLine(new[] { "--server.urls", "http://localhost:" + serverPort })
+                .Build();
+
+            config.Set(WebHostBuilder.ServerKey, "Kestrel");
+
+            var engineBuilder = new WebHostBuilder(_serviceProvider, config);
 
             if (transportType == TransportType.Stdio)
             {
-                context.Server = null;
-                context.ServerFactory = new Stdio.StdioServerFactory(Console.In, writer);
+                engineBuilder.UseServer(new Stdio.StdioServerFactory(Console.In, writer));
             }
 
-            var serverShutdown = engine.Start(context);
+            var engine = engineBuilder.Build();
+
+            var serverShutdown = engine.Start();
 
             var appShutdownService = _serviceProvider.GetRequiredService<IApplicationShutdown>();
             var shutdownHandle = new ManualResetEvent(false);
@@ -133,6 +141,14 @@ namespace OmniSharp
             }
 
             shutdownHandle.WaitOne();
+        }
+    }
+
+    public class OmniSharpServiceProvider : IServiceProvider
+    {
+        public object GetService(Type serviceType)
+        {
+            throw new NotImplementedException();
         }
     }
 }

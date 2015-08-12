@@ -1,10 +1,8 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.FeatureModel;
 using Microsoft.AspNet.Hosting.Server;
-using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Configuration;
 using OmniSharp.Stdio.Services;
 
 namespace OmniSharp.Stdio
@@ -25,7 +23,7 @@ namespace OmniSharp.Stdio
             return new StdioServerInformation();
         }
 
-        public IDisposable Start(IServerInformation serverInformation, Func<IFeatureCollection, Task> application)
+        public IDisposable Start(IServerInformation serverInformation, Func<Microsoft.AspNet.Http.Features.IFeatureCollection, Task> application)
         {
             if (serverInformation.GetType() != typeof(StdioServerInformation))
             {

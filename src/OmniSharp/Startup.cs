@@ -15,7 +15,6 @@ using OmniSharp.Dnx;
 using OmniSharp.Filters;
 using OmniSharp.Middleware;
 using OmniSharp.MSBuild;
-using OmniSharp.NuGet;
 using OmniSharp.Options;
 using OmniSharp.Roslyn;
 using OmniSharp.Services;
@@ -158,7 +157,7 @@ namespace OmniSharp
             app.ApplicationServices.GetRequiredService<ProjectEventForwarder>();
 
             // Initialize everything!
-            var projectSystems = app.ApplicationServices.GetRequiredServices<IProjectSystem>();
+            var projectSystems = app.ApplicationServices.GetServices<IProjectSystem>();
 
             foreach (var projectSystem in projectSystems)
             {

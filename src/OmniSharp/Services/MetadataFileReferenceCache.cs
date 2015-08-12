@@ -2,8 +2,8 @@ using System;
 using System.IO;
 using System.Reflection.PortableExecutable;
 using Microsoft.CodeAnalysis;
+using Microsoft.Framework.Caching;
 using Microsoft.Framework.Caching.Memory;
-using Microsoft.Framework.Expiration.Interfaces;
 using Microsoft.Framework.Logging;
 using OmniSharp.Roslyn;
 
@@ -26,18 +26,24 @@ namespace OmniSharp.Services
         {
             var cacheKey = _cacheKeyPrefix + path.ToLowerInvariant();
 
-            var metadata = _cache.GetOrSet(cacheKey, ctx =>
+            AssemblyMetadata metadata;
+
+            if (!_cache.TryGetValue(cacheKey, out metadata))
             {
                 _logger.LogVerbose(string.Format("Cache miss {0}", path));
-
-                ctx.AddExpirationTrigger(new FileWriteTimeTrigger(path));
 
                 using (var stream = File.OpenRead(path))
                 {
                     var moduleMetadata = ModuleMetadata.CreateFromStream(stream, PEStreamOptions.PrefetchMetadata);
-                    return AssemblyMetadata.Create(moduleMetadata);
+
+                    metadata = AssemblyMetadata.Create(moduleMetadata);
+
+                    _cache.Set(
+                        cacheKey,
+                        metadata,
+                        new MemoryCacheEntryOptions().AddExpirationTrigger(new FileWriteTimeTrigger(path)));
                 }
-            });
+            }
 
             var documentationFile = Path.ChangeExtension(path, ".xml");
             if (File.Exists(documentationFile))
