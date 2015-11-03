@@ -8,7 +8,7 @@ using OmniSharp.Models;
 namespace OmniSharp.Roslyn.CSharp.Services.Structure
 {
     [OmniSharpHandler(OmnisharpEndpoints.MembersFlat, LanguageNames.CSharp)]
-    public class MembersAsFlatService : RequestHandler<MembersFlatRequest, IEnumerable<QuickFix>>
+    public class MembersAsFlatService : RequestHandler<MembersFlatRequest, QuickFixResponse>
     {
         private readonly OmnisharpWorkspace _workspace;
 
@@ -18,7 +18,7 @@ namespace OmniSharp.Roslyn.CSharp.Services.Structure
             _workspace = workspace;
         }
 
-        public async Task<IEnumerable<QuickFix>> Handle(MembersFlatRequest request)
+        public async Task<QuickFixResponse> Handle(MembersFlatRequest request)
         {
             var stack = new List<FileMemberElement>(await StructureComputer.Compute(_workspace.GetDocuments(request.FileName)));
             var ret = new List<QuickFix>();
@@ -29,7 +29,7 @@ namespace OmniSharp.Roslyn.CSharp.Services.Structure
                 ret.Add(node.Location);
                 stack.AddRange(node.ChildNodes);
             }
-            return ret;
+            return new QuickFixResponse(ret);
         }
     }
 }
